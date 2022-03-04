@@ -162,7 +162,6 @@ python -m tools.train_net --config-file ./configs/BDD100k/stud_regnet.yaml --num
 ```
 
 **Pretrained models**
-
 The pretrained models for BDD100K can be downloaded from [vanilla]() and [STUD-ResNet]() and [STUD-RegNet]().
 
 The pretrained models for Youtube-VIS can be downloaded from [vanilla]() and [STUD-ResNet]() and [STUD-RegNet]().
@@ -192,7 +191,7 @@ Here "--model" means the name of the directory that contains the checkpoint file
 If you found any part of this code is useful in your research, please consider citing our paper:
 
 ```
-  @article{du2022vos,
+  @article{du2022stud,
       title={Unknown-Aware Object Detection: Learning What You Don’t Know from Videos in the Wild}, 
       author={Du, Xuefeng and Wang, Xin and Gozum, Gabriel and Li, Yixuan},
       journal={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
