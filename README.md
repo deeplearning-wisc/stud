@@ -162,6 +162,7 @@ python -m tools.train_net --config-file ./configs/BDD100k/stud_regnet.yaml --num
 ```
 
 **Pretrained models**
+
 The pretrained models for BDD100K can be downloaded from [vanilla]() and [STUD-ResNet]() and [STUD-RegNet]().
 
 The pretrained models for Youtube-VIS can be downloaded from [vanilla]() and [STUD-ResNet]() and [STUD-RegNet]().
