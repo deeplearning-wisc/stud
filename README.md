@@ -161,11 +161,13 @@ python -m tools.train_net --config-file ./configs/BDD100k/stud_resnet.yaml --num
 python -m tools.train_net --config-file ./configs/BDD100k/stud_regnet.yaml --num-gpus 4
 ```
 
+Download the pretrained backbone for RegNetX from [here](https://drive.google.com/file/d/1MjK9m68lAXj6AiVuSBMZX0m9DkOS2zRL/view?usp=sharing).
+
 **Pretrained models**
 
-The pretrained models for BDD100K can be downloaded from [vanilla]() and [STUD-ResNet]() and [STUD-RegNet]().
+The pretrained models for BDD100K can be downloaded from [vanilla](https://drive.google.com/file/d/19FSgMpzuRsl_qBZR4ifHq2soLDBmThFd/view?usp=sharing) and [STUD-ResNet](https://drive.google.com/file/d/1JAthrSJ8yK5bbhlZAD2vVor2uJ5aTkaX/view?usp=sharing) and [STUD-RegNet](https://drive.google.com/file/d/1-bqcdJjL3M8w09GRhRjuzawPEfX2SuUH/view?usp=sharing).
 
-The pretrained models for Youtube-VIS can be downloaded from [vanilla]() and [STUD-ResNet]() and [STUD-RegNet]().
+The pretrained models for Youtube-VIS can be downloaded from [vanilla](https://drive.google.com/file/d/1yKK9yDdLc_r2NSTaM5oYJ_09umi1GNwF/view?usp=sharing) and [STUD-ResNet](https://drive.google.com/file/d/1DTc2GqfNybcsFPnFA5o48E28MKCBTCFZ/view?usp=sharing) and [STUD-RegNet](https://drive.google.com/file/d/1hDdFYfWHl-SXUMd7xN9PcXnipkN-m5Qf/view?usp=sharing).
 
 ## Evaluation
 

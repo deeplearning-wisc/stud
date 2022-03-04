@@ -137,12 +137,11 @@ class CycleEnergyDirectAddAllHead(nn.Module):
                         fea_temp = roi_head.box_head(v)
                         predictions1 = roi_head.box_predictor(fea_temp)
                         energy_scores_all = torch.logsumexp(predictions1[0][:, :-1], dim=1)
-                        # print(len(energy_scores_all))
+                        # energy filtering.
                         selected_indices = energy_scores_all.argsort()[
                                            int(self.cfg.MODEL.SS.FILTERING1 * len(energy_scores_all)):
                                            int(self.cfg.MODEL.SS.FILTERING2 * len(energy_scores_all))]
-                        # breakpoint()
-                        # print(len(selected_indices))
+
                         feat_v = feat_v[selected_indices]
                         v = v[selected_indices]
 
@@ -154,30 +153,6 @@ class CycleEnergyDirectAddAllHead(nn.Module):
                             v_all = v
                     # breakpoint()
                     loss, correct, cnt, soft_target_score, dist = self.computer_corr_softmax(feat_u, fea_v_all)
-                    # # temp
-                    # fea_temp = roi_head.box_head(torch.matmul(soft_target_score, self.add(v_all).view(-1, 256 * 49)).view(-1, 256, 7, 7))
-                    # predictions1 = roi_head.box_predictor(fea_temp)
-                    # energy_scores_all = torch.logsumexp(predictions1[0][:, :-1], dim=1)
-                    # # print(energy_scores_all)
-                    #
-                    # fea_temp = roi_head.box_head(u)
-                    # predictions1 = roi_head.box_predictor(fea_temp)
-                    # energy_scores_all_pos = torch.logsumexp(predictions1[0][:, :-1], dim=1)
-                    # # print(energy_scores_all_pos)
-                    #
-                    # if len(self.pos) < 200:
-                    #     self.pos.append(energy_scores_all_pos)
-                    #     self.neg.append(energy_scores_all)
-                    # else:
-                    #     np.save('./pos_energy.npy', self.pos)
-                    #     np.save('./neg_energy.npy', self.neg)
-                    #     break
-                    # # temp
-                    # # breakpoint()
-
-                    # print(energy_scores_all)
-                    # print(energy_scores_all_pos)
-                    # breakpoint()
 
 
                     if neg_fea is None:

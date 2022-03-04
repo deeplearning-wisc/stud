@@ -267,21 +267,7 @@ class StandardROIHeadsSS(ROIHeads):
 
     @classmethod
     def _init_ttt(cls, cfg, input_shape):
-        return_roi = "build_cycle_head" in cfg.MODEL.SS.NAME or "build_cycle_energy_head" in cfg.MODEL.SS.NAME \
-                     or "build_cycle_energy_1024_latter_head" in cfg.MODEL.SS.NAME or \
-            "build_cycle_energy_direct_head" in cfg.MODEL.SS.NAME or  \
-            "build_cycle_energy_direct_add_head" in cfg.MODEL.SS.NAME or \
-                     "build_cycle_energy_direct_add_random_head" in cfg.MODEL.SS.NAME or \
-                     "build_cycle_energy_direct_add_max_head" in cfg.MODEL.SS.NAME or \
-            "build_cycle_energy_direct_no_head" in  cfg.MODEL.SS.NAME or \
-                     "build_cycle_energy_direct_add_all_head" in cfg.MODEL.SS.NAME or \
-                     "build_cycle_energy_direct_add_all_max_head" in cfg.MODEL.SS.NAME or \
-                     "build_cycle_energy_direct_add_att_head" in cfg.MODEL.SS.NAME or \
-            "build_cycle_energy_direct_add_all_random_head" in cfg.MODEL.SS.NAME or \
-            "build_cycle_energy_direct_add_all_noise_head" in cfg.MODEL.SS.NAME or \
-            "build_cycle_energy_direct_add_all_mild_head" in cfg.MODEL.SS.NAME or \
-            "build_cycle_energy_direct_add_all_cache_head" in cfg.MODEL.SS.NAME or \
-        "build_cycle_energy_direct_add_att_neg_head" in cfg.MODEL.SS.NAME
+        return_roi = "build_cycle_energy_direct_add_all_head" in cfg.MODEL.SS.NAME
         box_roi_thr = cfg.MODEL.SS.ROI_THR
         if cfg.MODEL.SS.NAME[0] == 'build_cycle_energy_direct_add_att_head':
             #if "vis21" in cfg.DATASETS.TRAIN[0]:
@@ -339,13 +325,6 @@ class StandardROIHeadsSS(ROIHeads):
             ].size(0)
         for i in range(len(proposals)):
             assert len(proposals[i]) > 0, proposals[i]
-        # breakpoint()
-        # if self.cfg.MODEL.SS.CHEAP == 1:
-        #     id_temp = torch.randperm(self.cfg.DATALOADER.PAIR_OFFSET_RANGE + 1)[:4].long()
-        #     for key in range(len(features_list)):
-        #         features_list[key] = features_list[key][id_temp]
-        #     # breakpoint()
-        #     proposals = [proposals[index] for index in id_temp]
 
         if self.training:
             losses = self._forward_box(features_list, proposals)
@@ -422,18 +401,6 @@ class StandardROIHeadsSS(ROIHeads):
 
             if not self.box_roi_all:
                 # filter out the low scores
-                # if i == 0:# for pair-frame setting.
-                #     # print(i)
-                #     keep_scores = torch.nonzero(
-                #         scores > self.box_roi_thr_logits
-                #     ).squeeze(1)
-                #     # print(len(boxes), len(keep_scores), self.cfg.MODEL.SS.ROI_THR)
-                #     boxes = boxes[keep_scores]
-                #     scores = scores[keep_scores]
-                # else:
-                #     keep_scores = torch.topk(-scores, 50)[1]
-                #     boxes = boxes[keep_scores]
-                #     scores = scores[keep_scores]
                 keep_scores = torch.nonzero(
                     scores > self.box_roi_thr_logits
                 ).squeeze(1)
@@ -551,148 +518,6 @@ class StandardROIHeadsSS(ROIHeads):
                 predictions, proposals
             )
             return pred_instances
-
-    def _return_box_features_att(self, features, proposals, targets=None):
-        # pylint: disable=no-member
-        proposals2 = []
-        idxs = torch.zeros(len(proposals)).int()
-        gt_logits = math.log((1.0 - 1e-10) / (1 - (1.0 - 1e-10)))
-        self.box_roi_thr_logits = math.log(
-            (1.0 - self.box_roi_thr) / (1.0 - (1.0 - self.box_roi_thr))
-        )
-        for i, p in enumerate(proposals):
-            boxes = p.proposal_boxes.tensor
-            scores = p.objectness_logits
-
-            if self.training and targets is not None:
-                gt_boxes = targets[i].gt_boxes.tensor
-                gt_scores = gt_logits * torch.ones(len(gt_boxes)).to(
-                    scores.device
-                )
-                boxes = torch.cat([gt_boxes, boxes])
-                scores = torch.cat([gt_scores, scores])
-
-            if not self.box_roi_all:
-                # filter out the low scores
-                keep = ops.nms(boxes, scores, 0.5)
-                boxes = boxes[keep]
-                scores = scores[keep]
-
-
-                _, idx = scores.sort(descending=True, dim=0)
-                # idx = []
-                scores = scores[idx[:self.cfg.MODEL.SS.SELECTED_FRAMES]]
-                boxes = boxes[idx[:self.cfg.MODEL.SS.SELECTED_FRAMES]]
-                # keep_scores = torch.nonzero(
-                #     scores > self.box_roi_thr_logits
-                # ).squeeze(1)
-                # # print(len(boxes))
-                # boxes = boxes[keep_scores]
-                # scores = scores[keep_scores]
-                if len(scores)<self.cfg.MODEL.SS.SELECTED_FRAMES:
-                    print('the rpn features are less than the desired threshold!!')
-                # print('num boxes: ', len(boxes))
-                if len(boxes.size()) == 1:
-                    boxes = boxes.unsqueeze(0)
-
-                # assert boxes.size(0) > 0, targets[i]
-
-                # if boxes.size(0) > self.cfg.MODEL.SS.SELECTED_FRAMES:
-                #     # keep = batched_nms(boxes, scores, idxs, 0.1)
-                #     size_temp = len(boxes)
-                #     keep = ops.nms(boxes, scores, 0.5)
-                #     # assert len(keep) == size_temp
-                #
-                #     idxs1 = torch.randperm(keep.size(0))[:self.cfg.MODEL.SS.SELECTED_FRAMES]
-                #     keep = keep[idxs1]
-                #     boxes = boxes[keep]
-                #     scores = scores[keep]
-                    # print(len(keep))
-
-
-            p2 = Instances(p._image_size)
-            p2.proposal_boxes = Boxes(boxes)
-            p2.objectness_logits = scores
-            # print('num_boxes: ', len(boxes))
-            proposals2.append(p2)
-            prev = idxs[i - 1] if i > 0 else 0
-            idxs[i] = len(boxes) + prev
-
-        box_features = self.box_pooler(
-            features, [x.proposal_boxes for x in proposals2]
-        )
-        # box_features = nn.AdaptiveAvgPool2d(1)(box_features)
-        # return the corresponding proposals as well
-        return box_features, idxs, proposals2
-
-
-    def _return_box_features_att_cache(self, features, proposals, targets=None):
-        # pylint: disable=no-member
-        proposals2 = []
-        idxs = torch.zeros(len(proposals)).int()
-        gt_logits = math.log((1.0 - 1e-10) / (1 - (1.0 - 1e-10)))
-        self.box_roi_thr_logits = math.log(
-            (1.0 - self.box_roi_thr) / (1.0 - (1.0 - self.box_roi_thr))
-        )
-        for i, p in enumerate(proposals):
-            boxes = p.proposal_boxes.tensor
-            scores = p.objectness_logits
-
-            if self.training and targets is not None:
-                gt_boxes = targets[i].gt_boxes.tensor
-                gt_scores = gt_logits * torch.ones(len(gt_boxes)).to(
-                    scores.device
-                )
-                boxes = torch.cat([gt_boxes, boxes])
-                scores = torch.cat([gt_scores, scores])
-
-            if not self.box_roi_all:
-                # filter out the low scores
-                _, idx = scores.sort(descending=True, dim=0)
-                # idx = []
-                scores = scores[idx[:self.cfg.MODEL.SS.SELECTED_FRAMES]]
-                boxes = boxes[idx[:self.cfg.MODEL.SS.SELECTED_FRAMES]]
-                # keep_scores = torch.nonzero(
-                #     scores > self.box_roi_thr_logits
-                # ).squeeze(1)
-                # # print(len(boxes))
-                # boxes = boxes[keep_scores]
-                # scores = scores[keep_scores]
-                if len(scores)<self.cfg.MODEL.SS.SELECTED_FRAMES:
-                    print('the rpn features are less than the desired threshold!!')
-                # print('num boxes: ', len(boxes))
-                if len(boxes.size()) == 1:
-                    boxes = boxes.unsqueeze(0)
-
-                # assert boxes.size(0) > 0, targets[i]
-
-                # if boxes.size(0) > self.cfg.MODEL.SS.SELECTED_FRAMES:
-                #     # keep = batched_nms(boxes, scores, idxs, 0.1)
-                #     size_temp = len(boxes)
-                #     keep = ops.nms(boxes, scores, 0.5)
-                #     # assert len(keep) == size_temp
-                #
-                #     idxs1 = torch.randperm(keep.size(0))[:self.cfg.MODEL.SS.SELECTED_FRAMES]
-                #     keep = keep[idxs1]
-                #     boxes = boxes[keep]
-                #     scores = scores[keep]
-                    # print(len(keep))
-
-
-            p2 = Instances(p._image_size)
-            p2.proposal_boxes = Boxes(boxes)
-            p2.objectness_logits = scores
-            # print('num_boxes: ', len(boxes))
-            proposals2.append(p2)
-            prev = idxs[i - 1] if i > 0 else 0
-            idxs[i] = len(boxes) + prev
-
-        box_features = self.box_pooler(
-            features, [x.proposal_boxes for x in proposals2]
-        )
-        # box_features = nn.AdaptiveAvgPool2d(1)(box_features)
-        # return the corresponding proposals as well
-        return box_features, idxs, proposals2
 
 
     def _forward_mask(

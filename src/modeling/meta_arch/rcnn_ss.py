@@ -45,25 +45,19 @@ class SSRCNN(nn.Module):
 
         for i in range(len(self.ss_head)):
             setattr(self, "ss_head_{}".format(i), self.ss_head[i])
-        # breakpoint()
+
         self.to(self.device)
         self.cfg = cfg
         if 'energy' in self.cfg.MODEL.SS.NAME[0]:
             self.logistic_regression = torch.nn.Linear(1, 2)
-            # self.logistic_regression = torch.nn.Linear(1, 1)
             self.logistic_regression.cuda()
         index = 0
         self.save_id = 0
-        # if self.cfg.MODEL.SS.LOSS == 'additional':
-        #     self.add_head = torch.nn.Linear(1024,self.cfg.MODEL.ROI_HEADS.NUM_CLASSES + 1)
         if self.cfg.MODEL.FREEZE == 1:
             for param in self.backbone.bottom_up.parameters():
-                # print(param)
-                # breakpoint()
                 index += 1
                 param.requires_grad = False
-            # self.backbone.requires_grad = False
-            # breakpoint()
+
 
     def from_config(self, cfg):
         # only train/eval the ss branch for debugging.
@@ -150,66 +144,17 @@ class SSRCNN(nn.Module):
                 # during training, the paired of inputs are put in one batch
                 # breakpoint()
                 criterion = torch.nn.CrossEntropyLoss()
-                if 'build_cycle_energy_head' == self.cfg.MODEL.SS.NAME[0] or \
-                        'build_cycle_energy_direct_head' == self.cfg.MODEL.SS.NAME[0] or  \
-                        "build_cycle_energy_direct_add_head" == self.cfg.MODEL.SS.NAME[0] or \
-                        "build_cycle_energy_direct_add_max_head" == self.cfg.MODEL.SS.NAME[0] or \
-                        "build_cycle_energy_direct_add_random_head" == self.cfg.MODEL.SS.NAME[0] or \
-                        "build_cycle_energy_direct_no_head" == self.cfg.MODEL.SS.NAME[0] or \
-                        "build_cycle_energy_direct_add_all_head" == self.cfg.MODEL.SS.NAME[0] or \
-                        "build_cycle_energy_direct_add_all_max_head" == self.cfg.MODEL.SS.NAME[0] or \
-                    "build_cycle_energy_direct_add_all_random_head" == self.cfg.MODEL.SS.NAME[0] or \
-                    "build_cycle_energy_direct_add_all_mild_head" == self.cfg.MODEL.SS.NAME[0] or \
-                    "build_cycle_energy_direct_add_all_noise_head" == self.cfg.MODEL.SS.NAME[0] or \
-                        "build_cycle_energy_direct_add_att_neg_head" == self.cfg.MODEL.SS.NAME[0]:
-                    # breakpoint()
-                    # print(box_features[0].shape)
-                    # ss_losses, acc, fea_for_reg, fake_loss, stuff_for_visual = head(self.roi_heads,
-                    #                                                                 box_features)
+                if  "build_cycle_energy_direct_add_all_head" == self.cfg.MODEL.SS.NAME[0]:
                     ss_losses, acc, fea_for_reg, fake_loss = head(self.roi_heads,
                                                                                     box_features)
                     if fea_for_reg is None:
+                        # corner cases when there is no object in the reference images.
                         print('fea_u contains no features!')
-                        # ene_loss = torch.zeros(1).cuda()
-                        # ene_loss.requires_grad = True
                         fake_input = torch.zeros(1).cuda()
                         fake_loss_for_lr = (self.logistic_regression(fake_input) - \
                                             self.logistic_regression(fake_input)).sum()
                         losses.update({'ene_reg_loss': fake_loss + fake_loss_for_lr})
                     else:
-                        '''
-                        import matplotlib.patches as patches
-                        import matplotlib.pyplot as plt
-                        max_indices = range(len(stuff_for_visual[0][1].proposal_boxes))
-                        #list(set(list(stuff_for_visual[1].cpu().data.numpy())))
-                        fea_for_reg1 = self.roi_heads.box_head(stuff_for_visual[2].view(-1, 256, 7, 7))
-                        predictions1 = self.roi_heads.box_predictor(fea_for_reg1)
-                        energy_scores_all = torch.logsumexp(predictions1[0][:, :-1], dim=1).cpu().data.numpy()
-                        # breakpoint()
-                        # print(energy_scores_all)
-                        fig, ax = plt.subplots()
-                        ax.imshow(batched_inputs[1]['image'].permute(1,2,0))
-                        for indice in max_indices:
-                            # breakpoint()
-                            cor = stuff_for_visual[0][1].proposal_boxes[int(indice)].tensor.squeeze().cpu().data.numpy()
-                            att1 = (cor[0], cor[1])
-                            width = cor[2]-cor[0]
-                            height = cor[3]-cor[1]
-                            # the first object.
-                            dist = stuff_for_visual[3][0].cpu().data.numpy()
-                            assert len(dist) == len(max_indices)
-                            plt.text(cor[0], cor[1], str(round(energy_scores_all[int(indice)],2))+
-                                     '/' + str(round(dist[int(indice)],2)),fontsize=4,color='white')
-                                     # bbox=dict(fill=False, edgecolor='red', linewidth=1))
-                            rect = patches.Rectangle(att1, width, height, linewidth=1, edgecolor='r', facecolor='none')
-                            ax.add_patch(rect)
-                        plt.savefig('./temp_save_all/'+str(self.save_id)+'.jpg', dpi=250)
-                        # breakpoint()
-                        self.save_id += 1
-                        plt.clf()
-                        '''
-
-
                         # breakpoint()
                         if self.cfg.MODEL.SS.LOSS == 'normal':
                             # breakpoint()
@@ -222,118 +167,10 @@ class SSRCNN(nn.Module):
                                 torch.logsumexp(predictions[0][:, :-1], dim=1).unsqueeze(1)),
                                 binary_labels.long())
                             ene_loss = self.cfg.MODEL.SS.ENERGY_WEIGHT * energy_reg_loss
-                        elif self.cfg.MODEL.SS.LOSS == 'margin':
-                            fea_for_reg = self.roi_heads.box_head(fea_for_reg.view(-1, 256, 7, 7))
-                            predictions = self.roi_heads.box_predictor(fea_for_reg)
-                            binary_labels = torch.ones(len(predictions[0])).cuda()
-                            binary_labels[int(len(predictions[0]) / 2):] = 0
-                            Ec_out = -torch.logsumexp(predictions[0][:, :-1], dim=1)[int(len(predictions[0]) / 2):]
-                            Ec_in = -torch.logsumexp(predictions[0][:, :-1], dim=1)[:int(len(predictions[0]) / 2)]
-                            ene_loss = 0.001 * (torch.pow(F.relu(Ec_in + 15), 2).mean() + torch.pow(
-                                F.relu(-7 - Ec_out), 2).mean())
-                            fake_input = torch.zeros(1).cuda()
-                            ene_loss1 = (self.logistic_regression(fake_input) - \
-                                         self.logistic_regression(fake_input)).sum()
-                            ene_loss += ene_loss1
-                        elif self.cfg.MODEL.SS.LOSS == 'additional':
-                            # print()
-                            ene_loss = self.roi_heads._forward_box_additional(
-                                fea_for_reg[int(len(fea_for_reg)/2):].view(-1, 256, 7, 7))
-                            binary_labels = torch.ones(1).cuda()
-                            fake_input = torch.zeros(1).cuda()
-                            ene_loss1 = (self.logistic_regression(fake_input) - \
-                                                self.logistic_regression(fake_input)).sum()
-                            ene_loss = 1.5 * ene_loss['loss_cls_add'] + ene_loss1
 
 
-                        # ene_loss.requires_grad=True
-                        # print('hhh')
-                        ######temp
-                        # output = self.logistic_regression(
-                        #     torch.logsumexp(predictions[0][:, :-1], dim=1).view(-1, 1))
-                        # energy_reg_loss = F.binary_cross_entropy_with_logits(
-                        #     output.view(-1), binary_labels.long())
-                        # ene_loss = self.cfg.MODEL.SS.ENERGY_WEIGHT * energy_reg_loss
-                        # breakpoint()
-                        # print(self.logistic_regression.weight)
-                        # print(torch.logsumexp(predictions[0][:, :-1][:int(len(predictions[0]) / 2)], dim=1))
-                        # print(torch.logsumexp(predictions[0][:, :-1][int(len(predictions[0]) / 2):], dim=1))
-                        # temp
                         losses.update({'ene_reg_loss': ene_loss})
                         del binary_labels
-                elif "build_cycle_energy_direct_add_all_cache_head" == self.cfg.MODEL.SS.NAME[0]:
-                    ss_losses, acc, fea_for_reg, fake_loss = head(self.roi_heads,
-                                                                  box_features)
-                    if fea_for_reg is None:
-                        print('fea_u contains no features!')
-                        # ene_loss = torch.zeros(1).cuda()
-                        # ene_loss.requires_grad = True
-                        fake_input = torch.zeros(1).cuda()
-                        fake_loss_for_lr = (self.logistic_regression(fake_input) - \
-                                            self.logistic_regression(fake_input)).sum()
-                        losses.update({'ene_reg_loss': fake_loss + fake_loss_for_lr})
-                    else:
-                        if self.cfg.MODEL.SS.LOSS == 'normal':
-                            fea_for_reg = self.roi_heads.box_head(fea_for_reg.view(-1, 256, 7, 7))
-                            predictions = self.roi_heads.box_predictor(fea_for_reg)
-                            binary_labels = torch.ones(len(predictions[0])).cuda()
-                            binary_labels[int(len(predictions[0]) / (self.cfg.DATALOADER.SELCTED_NUMBER + 1)):] = 0
-                            energy_reg_loss = criterion(self.logistic_regression(
-                                torch.logsumexp(predictions[0][:, :-1], dim=1).unsqueeze(1)),
-                                binary_labels.long())
-                            ene_loss = self.cfg.MODEL.SS.ENERGY_WEIGHT * energy_reg_loss
-                        losses.update({'ene_reg_loss': ene_loss})
-                        # print('ggg')
-                        del binary_labels
-                elif "build_cycle_energy_direct_add_att_head" == self.cfg.MODEL.SS.NAME[0]:
-
-                    # breakpoint()
-                    # print(box_features[0].shape)
-                    ss_losses, acc, fea_for_reg, fake_loss = head(box_features)
-                    if fea_for_reg is None:
-                        print('fea_u contains no features!')
-                        # ene_loss = torch.zeros(1).cuda()
-                        # ene_loss.requires_grad = True
-                        fake_input = torch.zeros(1).cuda()
-                        fake_loss_for_lr = (self.logistic_regression(fake_input) - \
-                                            self.logistic_regression(fake_input)).sum()
-                        losses.update({'ene_reg_loss': fake_loss + fake_loss_for_lr})
-                    else:
-                        fea_for_reg = self.roi_heads.box_head(fea_for_reg.view(-1, 256, 7, 7))
-                        predictions = self.roi_heads.box_predictor(fea_for_reg)
-                        binary_labels = torch.ones(len(predictions[0])).cuda()
-                        binary_labels[int(len(predictions[0]) / (self.cfg.DATALOADER.SELCTED_NUMBER + 1)):] = 0
-
-                        # breakpoint()
-                        energy_reg_loss = criterion(self.logistic_regression(
-                            torch.logsumexp(predictions[0][:, :-1], dim=1).unsqueeze(1)),
-                            binary_labels.long())
-                        ene_loss = self.cfg.MODEL.SS.ENERGY_WEIGHT * energy_reg_loss
-                        # ene_loss.requires_grad=True
-                        losses.update({'ene_reg_loss': ene_loss})
-                        # print('hhh')
-                        del binary_labels
-
-                elif 'build_cycle_energy_1024_latter_head' == self.cfg.MODEL.SS.NAME[0]:
-                    ss_losses, acc, fea_for_reg = head(box_features)
-                    if fea_for_reg is None:
-                        print('fea_u contains no features!')
-                        losses.update({'ene_reg_loss': torch.zeros(1).cuda()})
-                    else:
-                        # breakpoint()
-                        # fea_for_reg = self.roi_heads.box_head(fea_for_reg.view(-1, 256, 7, 7))
-                        fea_for_reg = self.roi_heads.box_head.fc2(fea_for_reg)
-                        fea_for_reg = self.roi_heads.box_head.fc_relu2(fea_for_reg)
-
-                        predictions = self.roi_heads.box_predictor(fea_for_reg)
-                        binary_labels = torch.ones(len(predictions[0])).cuda()
-                        binary_labels[int(len(predictions[0]) / 2):] = 0
-                        # criterion = torch.nn.CrossEntropyLoss()
-                        # breakpoint()
-                        energy_reg_loss = criterion(self.logistic_regression(
-                            torch.logsumexp(predictions[0][:, :-1], dim=1).unsqueeze(1)),
-                            binary_labels.long())
-                        losses.update({'ene_reg_loss': self.cfg.MODEL.SS.ENERGY_WEIGHT * energy_reg_loss})
                 else:
                     ss_losses, acc = head(box_features)
                 if "energy" not in self.cfg.MODEL.SS.NAME[0]:

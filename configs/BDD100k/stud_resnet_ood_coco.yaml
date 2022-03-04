@@ -39,4 +39,4 @@ DATALOADER:
   SAMPLER_TRAIN: "PairTrainingMultiRandomSampler"
   PAIR_OFFSET_RANGE: 9
   SELCTED_NUMBER: 3
-OUTPUT_DIR: "/nobackup-slow/dataset/video/bdd/bdd100k/checkpoints/bdd_tracking_2k/daytime/energy_no_original_loss_direct_add_frame_9_revise_4to6_multi_random_seed1"
+OUTPUT_DIR: "/nobackup-slow/dataset/my_xfdu/video/bdd/bdd100k/checkpoints/bdd_tracking_2k/daytime/energy_no_original_loss_direct_add_frame_9_revise_4to6_multi_random_seed_refactor"

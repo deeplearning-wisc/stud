@@ -544,6 +544,9 @@ Alternatively, you can call evaluation functions yourself (see Colab balloon tut
             ), "{} != {}".format(len(cfg.DATASETS.TEST), len(evaluators))
 
         results = OrderedDict()
+        if saved_address is None:
+            print('Please proceed to the test phase!')
+            return None
         for idx, dataset_name in enumerate(cfg.DATASETS.TEST):
             data_loader = cls.build_test_loader(cfg, dataset_name)
             # When evaluators are passed in as arguments,
