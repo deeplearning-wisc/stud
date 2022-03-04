@@ -1,0 +1,11 @@
+termcolor
+numpy
+tqdm
+matplotlib
+termcolor
+yacs
+tabulate
+cloudpickle
+Pillow
+imagesize
+tensorboard

@@ -1,0 +1,42 @@
+_BASE_: "../Base-RCNN-FPN.yaml"
+MODEL:
+  META_ARCHITECTURE: "SSRCNN"
+  WEIGHTS: "detectron2://ImageNetPretrained/MSRA/R-50.pkl"
+  MASK_ON: False
+  RESNETS:
+    DEPTH: 50
+  ROI_HEADS:
+    NAME: "StandardROIHeadsSS"
+    NUM_CLASSES: 40
+  SS:
+    FEAT_LEVEL: "res4"
+    NAME: ["build_cycle_energy_direct_add_all_head"]
+    LOSS_SCALE: 0.0
+    RATIO: 2.0
+    COEF: 1.0
+    FILTERING1: 0.4
+    FILTERING2: 0.6
+    ENERGY_WEIGHT: 0.02
+DATASETS:
+  TRAIN: ("vis21_train",)
+  TEST: ("nu_bdd_ood", ) #vis_coco_ood
+SOLVER:
+  IMS_PER_BATCH: 4
+#   IMS_PER_BATCH: 16
+  BASE_LR: 0.02
+#  STEPS: (31200, 41600,)
+#  MAX_ITER: 45500
+  STEPS: (36000, 48000,)
+  MAX_ITER: 52500
+  WARMUP_ITERS: 5000
+INPUT:
+  MIN_SIZE_TRAIN: (800,)
+  RANDOM_FLIP: "none"
+  CROP:
+    ENABLED: True
+SEED: 1998
+DATALOADER:
+  SAMPLER_TRAIN: "PairTrainingMultiRandomSampler"
+  SELCTED_NUMBER: 3
+  PAIR_OFFSET_RANGE: 9
+OUTPUT_DIR: "/nobackup-slow/dataset/video/vis/checkpoints/VIS/energy_no_original_loss_direct_add_0_02_frame_9_revise_4to6_multi_random_seed_regnet_longer"

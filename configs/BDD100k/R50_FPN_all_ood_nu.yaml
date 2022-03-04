@@ -1,0 +1,26 @@
+_BASE_: "../Base-RCNN-FPN.yaml"
+MODEL:
+  META_ARCHITECTURE: "GeneralizedRCNN1"
+  WEIGHTS: "detectron2://ImageNetPretrained/MSRA/R-50.pkl"
+  MASK_ON: False
+  RESNETS:
+    DEPTH: 50
+  ROI_HEADS:
+    NUM_CLASSES: 10
+DATASETS:
+#  TRAIN: ("waymo_all_train", )
+  TRAIN:  ("bdd_tracking_2k_train",)
+  TEST: ("nu_bdd_ood",)
+SOLVER:
+  # the size of the BDD tracking daytime is about 2x of the BDD100k dataset
+  # for initial experiments, this schedule will be approximately, 0.5X schedule
+  # ~5 epochs
+  IMS_PER_BATCH: 16
+  BASE_LR: 0.02
+  STEPS: (36000, 48000,)
+  MAX_ITER: 52500
+INPUT:
+  MIN_SIZE_TRAIN: (800,)
+  CROP:
+    ENABLED: True
+OUTPUT_DIR: "/nobackup-slow/dataset/video/bdd/bdd100k/checkpoints/bdd_tracking_2k/daytime/R50_FPN_all_vanilla"
