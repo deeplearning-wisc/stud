@@ -1,6 +1,6 @@
 # STUD
 
-This is the source code accompanying the paper ***Unknown-Aware Object Detection:Learning What You Don’t Know from Videos in the Wild*** [paper]() by Xuefeng Du, Xin Wang, Gabriel Gozum and Yixuan Li 
+This is the source code accompanying the paper ***Unknown-Aware Object Detection:Learning What You Don’t Know from Videos in the Wild*** [paper](https://arxiv.org/abs/2203.03800) by Xuefeng Du, Xin Wang, Gabriel Gozum and Yixuan Li 
 
 The codebase is based heavily from [CycleConf](https://github.com/xinw1012/cycle-confusion) and [Detectron2](https://github.com/facebookresearch/detectron2).
 
