@@ -4,6 +4,9 @@ This is the source code accompanying the paper ***Unknown-Aware Object Detection
 
 The codebase is based heavily from [CycleConf](https://github.com/xinw1012/cycle-confusion) and [Detectron2](https://github.com/facebookresearch/detectron2).
 
+## Ads 
+
+Checkout our similar ICLR'22 work [VOS](https://github.com/deeplearning-wisc/vos) on object detection in still images and classification networks if you are interested!
 
 ## Installation
 
