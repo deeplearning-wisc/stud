@@ -6,7 +6,7 @@ The codebase is based heavily from [CycleConf](https://github.com/xinw1012/cycle
 
 ## Ads 
 
-Checkout our similar ICLR'22 work [VOS](https://github.com/deeplearning-wisc/vos) on object detection in still images and classification networks if you are interested!
+Checkout our similar ICLR'22 work [VOS](https://github.com/deeplearning-wisc/vos) on object detection in still images and classification networks, NeurIPS'22 work [SIREN](https://github.com/deeplearning-wisc/siren) on OOD detection for detection transformers if you are interested!
 
 ## Installation
 
