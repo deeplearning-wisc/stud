@@ -306,7 +306,7 @@ class SSRCNN(nn.Module):
         else:
             box_delta = box_delta[filter_mask]
 
-        det_labels = torch.arange(scores.shape[1], dtype=torch.long)
+        det_labels = torch.arange(scores.shape[1], dtype=torch.long).cuda()
         det_labels = det_labels.view(1, -1).expand_as(scores)
 
         scores = scores[filter_mask]
