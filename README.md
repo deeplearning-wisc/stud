@@ -6,8 +6,12 @@ The codebase is based heavily from [CycleConf](https://github.com/xinw1012/cycle
 
 ## Ads 
 
-Checkout our similar ICLR'22 work [VOS](https://github.com/deeplearning-wisc/vos) on object detection in still images and classification networks, NeurIPS'22 work [SIREN](https://github.com/deeplearning-wisc/siren) on OOD detection for detection transformers if you are interested!
-
+Checkout our
+* ICLR'22 work [VOS](https://github.com/deeplearning-wisc/vos) on object detection in still images and classification networks.
+* NeurIPS'22 work [SIREN](https://github.com/deeplearning-wisc/siren) on OOD detection for detection transformers.
+* ICLR'23 work [NPOS](https://openreview.net/forum?id=JHklpEZqduQ) on non-parametric outlier synthesis.
+* NeurIPS'23 work [DREAM-OOD](https://arxiv.org/pdf/2309.13415.pdf) on outlier generation in the pixel space (by diffusion models) if you are interested!
+* 
 ## Installation
 
 ### Environment
