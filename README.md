@@ -11,7 +11,7 @@ Checkout our
 * NeurIPS'22 work [SIREN](https://github.com/deeplearning-wisc/siren) on OOD detection for detection transformers.
 * ICLR'23 work [NPOS](https://openreview.net/forum?id=JHklpEZqduQ) on non-parametric outlier synthesis.
 * NeurIPS'23 work [DREAM-OOD](https://arxiv.org/pdf/2309.13415.pdf) on outlier generation in the pixel space (by diffusion models) if you are interested!
-* 
+
 ## Installation
 
 ### Environment
